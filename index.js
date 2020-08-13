@@ -18,7 +18,7 @@ const generateItemElement = function (item) {
      <span class='shopping-item'>${item.name}</span>
     `;
   }
-  if (item.updating) {
+  if (item.updating && !item.checked) {
     itemTitle = `
     <form id="js-shopping-list-update-form">
       <input type="text" name="shopping-list-update" class="js-shopping-list-update" placeholder="" value="${item.name}">
@@ -63,6 +63,7 @@ const render = function () {
   // property of false are included.
   if (store.hideCheckedItems) {
     items = items.filter(item => !item.checked);
+    console.log(items);
   }
 
   /**
