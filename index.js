@@ -1,9 +1,12 @@
+/* eslint-disable no-undef */
+'use strict';
+
 const store = {
   items: [
-    { id: cuid(), name: 'apples', checked: false },
-    { id: cuid(), name: 'oranges', checked: false },
-    { id: cuid(), name: 'milk', checked: true },
-    { id: cuid(), name: 'bread', checked: false }
+    { id: cuid(), name: 'apples', checked: false, updating: false},
+    { id: cuid(), name: 'oranges', checked: false, updating: false },
+    { id: cuid(), name: 'milk', checked: true, updating: false },
+    { id: cuid(), name: 'bread', checked: false, updating: false }
   ],
   hideCheckedItems: false
 };
@@ -13,6 +16,14 @@ const generateItemElement = function (item) {
   if (!item.checked) {
     itemTitle = `
      <span class='shopping-item'>${item.name}</span>
+    `;
+  }
+  if (item.updating) {
+    itemTitle = `
+    <form id="js-shopping-list-update-form">
+      <input type="text" name="shopping-list-update" class="js-shopping-list-update" placeholder="" value="${item.name}">
+      <button class='shopping-item-confirm js-item-confirm'>confirm</button>
+    </form>
     `;
   }
 
@@ -25,6 +36,9 @@ const generateItemElement = function (item) {
         </button>
         <button class='shopping-item-delete js-item-delete'>
           <span class='button-label'>delete</span>
+        </button>
+        <button class='shopping-item-update js-item-update'>
+          <span class='button-label'>update</span>
         </button>
       </div>
     </li>`;
@@ -145,6 +159,39 @@ const handleToggleFilterClick = function () {
   });
 };
 
+/* New Function and listeners below to handle updating list item */
+const toggleUpdateForListItem = function (id) {
+  const foundItem = store.items.find(item => item.id === id);
+  foundItem.updating = !foundItem.updating;
+};
+
+const handleUpdateItemClicked = function () {
+  $('.js-shopping-list').on('click', '.js-item-update', event => {
+    const id = getItemIdFromElement(event.currentTarget);
+    toggleUpdateForListItem(id);
+    render();
+  });
+};
+
+const updateItemInList = function (id, newItemName) {
+  const foundItem = store.items.find(item => item.id === id);
+  foundItem.name = newItemName;
+};
+
+const handleConfirmUpdateSubmit = function () {
+  //$('#js-shopping-list-update-form').submit(function (event) {
+  $('.js-shopping-list').on('click', '.js-item-confirm', event => {
+    event.preventDefault();
+    const id = getItemIdFromElement(event.currentTarget);
+    const newItemName = $('.js-shopping-list-update').val();
+    $('.js-shopping-list-update').val('');
+    updateItemInList(id, newItemName);
+    toggleUpdateForListItem(id);
+    render();
+  });
+};
+
+
 /**
  * This function will be our callback when the
  * page loads. It is responsible for initially 
@@ -160,6 +207,8 @@ const handleShoppingList = function () {
   handleItemCheckClicked();
   handleDeleteItemClicked();
   handleToggleFilterClick();
+  handleUpdateItemClicked();
+  handleConfirmUpdateSubmit();
 };
 
 // when the page loads, call `handleShoppingList`
